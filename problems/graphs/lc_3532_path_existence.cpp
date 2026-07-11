@@ -36,20 +36,35 @@ public:
 
 class Solution {
 public:
-    vector<bool> pathExistenceQueries(
+    vector<int> pathExistenceQueries(
         int n,
         vector<int>& nums,
         int maxDiff,
         vector<vector<int>>& queries
     ) {
+        vector<int> order(n);
+        iota(order.begin(), order.end(), 0);
+        sort(order.begin(), order.end(), [&](int a, int b) {
+            return nums[a] < nums[b];
+        });
+
+        vector<int> rank_(n);
+        for (int i = 0; i < n; i++)
+            rank_[order[i]] = i;
+
         DSU dsu(n);
         for (int i = 1; i < n; i++) {
-            if (nums[i] - nums[i - 1] <= maxDiff)
-                dsu.unite(i, i - 1);
+            if (nums[order[i]] - nums[order[i - 1]] <= maxDiff)
+                dsu.unite(order[i], order[i - 1]);
         }
-        vector<bool> ans;
+        
+        vector<int> ans;
         for (auto& q : queries) {
-            ans.push_back(dsu.find(q[0]) == dsu.find(q[1]));
+            int u = q[0], v = q[1];
+            if (dsu.find(u) != dsu.find(v))
+                ans.push_back(-1);
+            else
+                ans.push_back(abs(rank_[u] - rank_[v]));
         }
         return ans;
     }
